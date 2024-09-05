@@ -58,8 +58,17 @@ while True:
     face_detected = False
     for (x, y, w, h) in faces:
         face_detected = True
+        # Crop and resize the detected face
+        crop_img = frame[y:y + h, x:x + w, :]
+        resized_img = cv2.resize(crop_img, (50, 50)).flatten().reshape(1, -1)
+        output = knn.predict(resized_img)
+        label = output[0]  # Get the predicted label
+
+        # Draw rectangle around the face
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    
+        # Put the label above the rectangle
+        cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+
     # Display the video feed on the Streamlit app
     stframe.image(frame, channels="BGR")
 
@@ -76,12 +85,13 @@ while True:
             crop_img = frame[y:y + h, x:x + w, :]
             resized_img = cv2.resize(crop_img, (50, 50)).flatten().reshape(1, -1)
             output = knn.predict(resized_img)
+            label = output[0]  # Get the predicted label
 
             # Capture timestamp for attendance
             ts = time.time()
             date = datetime.fromtimestamp(ts).strftime("%d-%m-%Y")
             timestamp = datetime.fromtimestamp(ts).strftime("%H:%M:%S")
-            attendance = [str(output[0]), str(timestamp), str(date)]
+            attendance = [label, str(timestamp), str(date)]
 
             # Save attendance to CSV file
             attendance_file = "C:/Users/Harold/Documents/Github/OUS-OJT/Attendance/Attendance_" + date + ".csv"
@@ -93,7 +103,7 @@ while True:
                     writer.writerow(COL_NAMES)
                 writer.writerow(attendance)
 
-            attendance_result = "Attendance recorded for " + str(output[0])
+            attendance_result = "Attendance recorded for " + label
             speak(attendance_result)
             st.success(attendance_result)
             attendance_taken = True  # Mark attendance as taken

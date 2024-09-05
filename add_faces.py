@@ -3,7 +3,6 @@ import pickle
 import numpy as np
 import os
 import streamlit as st
-from PIL import Image
 
 # Streamlit setup
 st.header("PUP ATTENDANCE BIOMETRICS")
@@ -28,28 +27,27 @@ if 'faces_data' not in st.session_state:
 
 # Use a centered div for the rest of the elements
 with st.container():
-
     name = st.text_input("Enter Your Name:")
-
-    # Disable the start button if name is not provided
     start = st.button('Start Collection', disabled=(name == ""))
+    
+    # Modify the Stop Collection button to refresh the page
     stop = st.button('Stop Collection', disabled=(start==False))
-
-    # Webcam feed placeholder
-    frame_placeholder = st.empty()
-
-    # Progress bar placeholder
+    
     progress_bar = st.empty()
-
-    # End of centered div
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Start the webcam feed immediately when the app opens
-video = cv2.VideoCapture(0)
+    # Refresh the page if Stop Collection is pressed
+    if stop:
+        st.session_state['collecting'] = False
+        st.session_state['faces_data'] = []
+        st.rerun()
+
+# Start the webcam feed
+frame_placeholder = st.empty()
+video = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Use DirectShow backend
 facedetect = cv2.CascadeClassifier('C:/Users/Harold/Documents/Github/OUS-OJT/data/haarcascade_frontalface_default.xml')
 
 i = 0
-
 while True:
     ret, frame = video.read()
     if not ret:
@@ -76,21 +74,14 @@ while True:
             frame = cv2.putText(frame, str(len(st.session_state['faces_data'])), (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 255), 1)
 
     # Display the live video feed in the Streamlit app
-    frame_placeholder.image(frame, channels="BGR")
+    frame_placeholder.image(frame, channels="BGR", use_column_width=True)
 
-    if stop:
-        st.session_state['collecting'] = False
-
+    # Check button states
+    if start and not st.session_state['collecting']:
+        st.session_state['collecting'] = True
     if len(st.session_state['faces_data']) >= 100:
         st.write("Collected 100 face images!")
         st.session_state['collecting'] = False
-        break
-
-    if not st.session_state.get('collecting', False):
-        if start:
-            st.session_state['collecting'] = True
-
-    if not st.session_state['collecting'] and stop:
         break
 
 video.release()

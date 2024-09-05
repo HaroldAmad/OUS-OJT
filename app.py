@@ -23,6 +23,6 @@ else:
     st.write(f"Count: {count}")
 
 
-df=pd.read_csv("C:/Users/Harold/Downloads/Compressed/face_recognition_project-main/face_recognition_project-main/Attendance/Attendance_" + date + ".csv")
+df=pd.read_csv("C:/Users/Harold/Documents/Github/OUS-OJT/Attendance/Attendance_" + date + ".csv")
 
 st.dataframe(df.style.highlight_max(axis=0))
