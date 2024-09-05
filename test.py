@@ -30,20 +30,22 @@ knn.fit(FACES, LABELS)
 st.title("Face Recognition Attendance System")
 
 # Button for taking attendance
-take_attendance = st.button('Take Attendance')
+take_attendance = st.button('Take Attendance', key="take_attendance")
 
 # Placeholder for the video feed
 stframe = st.empty()
+status_text = st.empty()
 
 # Video capture setup
-video = cv2.VideoCapture(0)
+video = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Use DirectShow backend
+
 COL_NAMES = ['NAME', 'TIME', 'DATE']
 
 attendance_taken = False
 attendance_result = ""
 
 # Continuously display the video feed
-while video.isOpened():
+while True:
     ret, frame = video.read()
     if not ret:
         st.error("Failed to capture video")
@@ -52,16 +54,24 @@ while video.isOpened():
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = facedetect.detectMultiScale(gray, 1.3, 5)
 
-    # If faces are detected, display the face with a rectangle (optional)
+    # Draw rectangle around detected faces
+    face_detected = False
     for (x, y, w, h) in faces:
+        face_detected = True
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-
+    
     # Display the video feed on the Streamlit app
     stframe.image(frame, channels="BGR")
 
+    # Update status text
+    if face_detected:
+        status_text.write("Face detected!")
+    else:
+        status_text.write("No face detected!")
+
     # Take attendance only when the button is pressed
     if take_attendance and not attendance_taken:
-        if len(faces) > 0:
+        if face_detected:
             (x, y, w, h) = faces[0]  # Only process the first detected face
             crop_img = frame[y:y + h, x:x + w, :]
             resized_img = cv2.resize(crop_img, (50, 50)).flatten().reshape(1, -1)
@@ -87,8 +97,6 @@ while video.isOpened():
             speak(attendance_result)
             st.success(attendance_result)
             attendance_taken = True  # Mark attendance as taken
-        else:
-            st.warning("No face detected!")
 
 video.release()
 cv2.destroyAllWindows()
