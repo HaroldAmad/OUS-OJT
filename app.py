@@ -1,28 +1,33 @@
 import streamlit as st
 import pandas as pd
-import time 
+import os
+import time
 from datetime import datetime
 
-ts=time.time()
-date=datetime.fromtimestamp(ts).strftime("%d-%m-%Y")
-timestamp=datetime.fromtimestamp(ts).strftime("%H:%M-%S")
+# Function to list all CSV files in the directory
+def list_csv_files(directory):
+    files = [f for f in os.listdir(directory) if f.endswith('.csv')]
+    return files
 
+# Directory containing the CSV files
+attendance_dir = "C:/Users/Harold/Documents/Github/OUS-OJT/Attendance"
+
+# List all CSV files
+csv_files = list_csv_files(attendance_dir)
+
+# Streamlit app
+st.title("Attendance Data Viewer")
+
+# Autorefresh every 2 seconds
 from streamlit_autorefresh import st_autorefresh
-
 count = st_autorefresh(interval=2000, limit=100, key="fizzbuzzcounter")
 
-if count == 0:
-    st.write("Count is zero")
-elif count % 3 == 0 and count % 5 == 0:
-    st.write("FizzBuzz")
-elif count % 3 == 0:
-    st.write("Fizz")
-elif count % 5 == 0:
-    st.write("Buzz")
-else:
-    st.write(f"Count: {count}")
 
+# Dropdown to select CSV file
+selected_file = st.selectbox("Select CSV file", options=csv_files)
 
-df=pd.read_csv("C:/Users/Harold/Documents/Github/OUS-OJT/Attendance/Attendance_" + date + ".csv")
-
-st.dataframe(df.style.highlight_max(axis=0))
+# Display selected CSV file's data
+if selected_file:
+    file_path = os.path.join(attendance_dir, selected_file)
+    df = pd.read_csv(file_path)
+    st.dataframe(df.style.highlight_max(axis=0))
