@@ -3,3 +3,5 @@ streamlit_autorefresh
 pandas
 opencv-python
 scikit-learn
+streamlit-navigation-bar
+pywin32
