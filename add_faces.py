@@ -26,17 +26,17 @@ if 'faces_data' not in st.session_state:
     st.session_state['faces_data'] = []
     st.session_state['collecting'] = False
 
-
 # Use a centered div for the rest of the elements
 with st.container():
 
     name = st.text_input("Enter Your Name:")
 
+    # Disable the start button if name is not provided
+    start = st.button('Start Collection', disabled=(name == ""))
+    stop = st.button('Stop Collection', disabled=(start==False))
+
     # Webcam feed placeholder
     frame_placeholder = st.empty()
-
-    start = st.button('Start Collection')
-    stop = st.button('Stop Collection')
 
     # Progress bar placeholder
     progress_bar = st.empty()
@@ -46,7 +46,7 @@ with st.container():
 
 # Start the webcam feed immediately when the app opens
 video = cv2.VideoCapture(0)
-facedetect = cv2.CascadeClassifier('C:/Users/Harold/Documents/Attendance/data/haarcascade_frontalface_default.xml')
+facedetect = cv2.CascadeClassifier('C:/Users/Harold/Documents/Github/OUS-OJT/data/haarcascade_frontalface_default.xml')
 
 i = 0
 
@@ -100,7 +100,7 @@ if st.session_state['faces_data']:
     faces_data = np.asarray(st.session_state['faces_data'])
     faces_data = faces_data.reshape(100, -1)
 
-    data_path = 'C:/Users/Harold/Documents/Attendance/data'
+    data_path = 'C:/Users/Harold/Documents/Github/OUS-OJT/data'
 
     if 'names.pkl' not in os.listdir(data_path):
         names = [name] * 100
