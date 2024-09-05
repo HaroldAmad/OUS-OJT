@@ -9,6 +9,37 @@ import time
 from datetime import datetime
 from win32com.client import Dispatch
 
+st.set_page_config(initial_sidebar_state="collapsed")
+with st.sidebar:
+    st.subheader("PUP Biometrics Attendance System")
+    st.button("Home")
+    st.button("Dashboard")
+    st.button("Sign Out")
+
+PUPSIDE = "pup.svg"
+PUPMAIN = "pup.svg"
+
+st.logo(
+    PUPMAIN,
+    icon_image=PUPSIDE,
+)
+
+
+page_bg_img = f"""
+<style>
+[data-testid="stAppViewContainer"] > .main {{
+background-image: url("https://i.imgur.com/E6EeiTk.jpeg");
+background-size: 180%;
+background-position: top left;
+background-repeat: no-repeat;
+background-attachment: local;
+}}
+
+</style>
+"""
+st.markdown(page_bg_img, unsafe_allow_html=True)
+left_co, cent_co,last_co = st.columns(3)
+
 # Function to generate speech
 def speak(str1):
     speak = Dispatch(("SAPI.SpVoice"))
@@ -27,14 +58,20 @@ knn = KNeighborsClassifier(n_neighbors=5)
 knn.fit(FACES, LABELS)
 
 # Streamlit interface components
-st.title("Face Recognition Attendance System")
-
-# Button for taking attendance
-take_attendance = st.button('Take Attendance', key="take_attendance")
+st.title("PUP Face Recognition Attendance System")
 
 # Placeholder for the video feed
-stframe = st.empty()
-status_text = st.empty()
+col1a, col2a, col3a, col4a, col5a, col6a, col7a= st.columns(7)
+with col2a:
+    stframe = st.empty()
+
+col1, col2, col3= st.columns(3)
+
+with col2:
+    status_text = st.empty()
+    # Button for taking attendance
+    take_attendance = st.button('Take Attendance', key="take_attendance")
+
 
 # Video capture setup
 video = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Use DirectShow backend
@@ -43,6 +80,37 @@ COL_NAMES = ['NAME', 'TIME', 'DATE']
 
 attendance_taken = False
 attendance_result = ""
+
+footer="""<style>
+a:link , a:visited{
+color: blue;
+background-color: transparent;
+text-decoration: underline;
+}
+
+a:hover,  a:active {
+color: red;
+background-color: transparent;
+text-decoration: underline;
+}
+
+.footer {
+position: fixed;
+left: 0;
+height: 5%;
+bottom: 0;
+width: 100%;
+background-color: maroon;
+color: white;
+text-align: center;
+}
+
+</style>
+<div class="footer">
+<p>Polytechnic University of The Philippines Biometric Attendance system | OJT</p>
+</div>
+"""
+st.markdown(footer,unsafe_allow_html=True)
 
 # Continuously display the video feed
 while True:
@@ -70,13 +138,13 @@ while True:
         cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
     # Display the video feed on the Streamlit app
-    stframe.image(frame, channels="BGR")
+    stframe.image(frame, channels="BGR", width=420)
 
     # Update status text
     if face_detected:
-        status_text.write("Face detected!")
+        status_text.write(" Valid Face detected!")
     else:
-        status_text.write("No face detected!")
+        status_text.write("Waiting for valid face")
 
     # Take attendance only when the button is pressed
     if take_attendance and not attendance_taken:
@@ -103,8 +171,9 @@ while True:
                     writer.writerow(COL_NAMES)
                 writer.writerow(attendance)
 
-            attendance_result = "Attendance recorded for " + label
-            speak(attendance_result)
+            attendance_result = "Attendance recorded for (" + label + " "+ date + timestamp + ")"
+            attendance_voice = "Attendance recorded for" + label 
+            speak(attendance_voice)
             st.success(attendance_result)
             attendance_taken = True  # Mark attendance as taken
 

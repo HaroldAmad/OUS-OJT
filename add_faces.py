@@ -3,10 +3,44 @@ import pickle
 import numpy as np
 import os
 import streamlit as st
+from streamlit_navigation_bar import st_navbar
+from streamlit_autorefresh import st_autorefresh
 
-# Streamlit setup
-st.header("PUP ATTENDANCE BIOMETRICS")
-st.title("Face Recognition Data Collection")
+st.set_page_config(initial_sidebar_state="collapsed")
+
+with st.sidebar:
+    st.subheader("PUP Biometrics Attendance System")
+    st.button("Home")
+    st.button("Dashboard")
+    st.button("Sign Out")
+
+
+PUPSIDE = "pup.svg"
+PUPMAIN = "pup.svg"
+
+st.logo(
+    PUPMAIN,
+    icon_image=PUPSIDE,
+)
+
+
+page_bg_img = f"""
+<style>
+[data-testid="stAppViewContainer"] > .main {{
+background-image: url("https://i.imgur.com/E6EeiTk.jpeg");
+background-size: 180%;
+background-position: top left;
+background-repeat: no-repeat;
+background-attachment: local;
+}}
+
+</style>
+"""
+st.subheader("PUP Biometrics Attendance System")
+st.markdown(page_bg_img, unsafe_allow_html=True)
+
+
+    
 
 # Center the rest of the elements
 centered_style = """
@@ -25,13 +59,22 @@ if 'faces_data' not in st.session_state:
     st.session_state['faces_data'] = []
     st.session_state['collecting'] = False
 
+# Start the webcam feed
+col1a, col2a, col3a, col4a, col5a, col6a, col7a= st.columns(7)
+with col2a:
+    frame_placeholder = st.empty()
+    video = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Use DirectShow backend
+    facedetect = cv2.CascadeClassifier('C:/Users/Harold/Documents/Github/OUS-OJT/data/haarcascade_frontalface_default.xml')
+
+
 # Use a centered div for the rest of the elements
 with st.container():
     name = st.text_input("Enter Your Name:")
-    start = st.button('Start Collection', disabled=(name == ""))
-    
-    # Modify the Stop Collection button to refresh the page
-    stop = st.button('Stop Collection', disabled=(start==False))
+    col1, col2, col3 , col4 = st.columns(4)
+    with col2 :
+        start = st.button('Start Collection', disabled=(name == ""))
+    with col3 :
+        stop = st.button('Stop Collection', disabled=(start==False))
     
     progress_bar = st.empty()
     st.markdown('</div>', unsafe_allow_html=True)
@@ -42,10 +85,36 @@ with st.container():
         st.session_state['faces_data'] = []
         st.rerun()
 
-# Start the webcam feed
-frame_placeholder = st.empty()
-video = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Use DirectShow backend
-facedetect = cv2.CascadeClassifier('C:/Users/Harold/Documents/Github/OUS-OJT/data/haarcascade_frontalface_default.xml')
+footer="""<style>
+a:link , a:visited{
+color: blue;
+background-color: transparent;
+text-decoration: underline;
+}
+
+a:hover,  a:active {
+color: red;
+background-color: transparent;
+text-decoration: underline;
+}
+
+.footer {
+position: fixed;
+left: 0;
+height: 5%;
+bottom: 0;
+width: 100%;
+background-color: maroon;
+color: white;
+text-align: center;
+}
+
+</style>
+<div class="footer">
+<p>Polytechnic University of The Philippines Biometric Attendance system | OJT</p>
+</div>
+"""
+st.markdown(footer,unsafe_allow_html=True)
 
 i = 0
 while True:
@@ -74,7 +143,9 @@ while True:
             frame = cv2.putText(frame, str(len(st.session_state['faces_data'])), (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 255), 1)
 
     # Display the live video feed in the Streamlit app
-    frame_placeholder.image(frame, channels="BGR", use_column_width=True)
+    frame_placeholder.image(frame, channels="BGR", width=480)
+
+    
 
     # Check button states
     if start and not st.session_state['collecting']:
@@ -115,3 +186,6 @@ if st.session_state['faces_data']:
             pickle.dump(faces, f)
         
     st.write("Face data saved successfully!")
+
+
+    
